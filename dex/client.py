@@ -4,7 +4,7 @@ import uuid
 import requests
 from rich.progress import track
 
-from config import BASE_URL, DEFAULT_STORAGE_PATH
+from dex.config import BASE_URL, DEFAULT_STORAGE_PATH
 
 
 class MangaDexClient:
@@ -50,9 +50,8 @@ class MangaDexClient:
     def dl_threaded(links: list, path: str) -> bool:
         for page_link in track(links, description="Downloading chapter..."):
             filename = page_link.split("/")[-1]
-            ext = page_link.split(".")[-1]
 
-            file_path = f"{path}/{filename}.{ext}"
+            file_path = f"{path}/{filename}"
 
             if not os.path.exists(file_path):
                 with requests.get(page_link, stream=True) as r_ctx:
