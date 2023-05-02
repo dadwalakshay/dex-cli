@@ -1,3 +1,5 @@
+import os
+
 import typer
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
@@ -7,6 +9,10 @@ from dex.utils import _open_chapter
 
 console = Console()
 err_console = Console(stderr=True)
+
+
+def line_break_console() -> None:
+    console.print(f"\n{os.get_terminal_size().columns * '+'}\n")
 
 
 def choose_manga_prompt(results: dict) -> tuple[str, str]:
@@ -89,7 +95,7 @@ def ls_manga_prompt(manga_ls: list) -> dict:
 
         choice_map[str(choice)] = result
 
-        console.print(f"({choice}) {title} - synced at {result['synced_at']}")
+        console.print(f"({choice}) {title}")
 
     manga_obj = choice_map[
         Prompt.ask(
@@ -110,7 +116,7 @@ def ls_chapter_prompt(chapter_ls: list) -> dict:
 
         choice_map[str(choice)] = result
 
-        console.print(f"({choice}) {title} - synced at {result['synced_at']}")
+        console.print(f"({choice}) {title}")
 
     chapter_obj = choice_map[
         Prompt.ask(
@@ -123,9 +129,12 @@ def ls_chapter_prompt(chapter_ls: list) -> dict:
     return chapter_obj
 
 
-def page_meta_console(page_meta: dict, path: str) -> None:
-    console.print(
-        f"Previously, You read {page_meta['last_read']} at {page_meta['last_read_at']}"
-    )
+def confirm_read_prompt(
+    manga_title: str, chapter_title: str, chapter_path: str
+) -> bool:
+    if Confirm.ask(f"Do you want to read {manga_title} - {chapter_title}?"):
+        _open_chapter(chapter_path)
 
-    _open_chapter(path)
+        return True
+
+    return False

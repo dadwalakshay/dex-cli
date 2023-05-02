@@ -2,15 +2,16 @@ import typer
 from dotenv import load_dotenv
 
 from dex.client import MangaDexClient
-from dex.db import get_chapters, get_mangas, get_page_meta
+from dex.db import get_chapters, get_mangas
 from dex.prompts import (
     choose_chapter_prompt,
     choose_manga_prompt,
     confirm_download_prompt,
+    confirm_read_prompt,
     err_console,
+    line_break_console,
     ls_chapter_prompt,
     ls_manga_prompt,
-    page_meta_console,
 )
 from dex.utils import _meta_parser
 
@@ -21,6 +22,8 @@ app = typer.Typer()
 
 @app.command()
 def download(title: str):
+    line_break_console()
+
     client_obj = MangaDexClient()
 
     _status, manga_results = client_obj.search(title)
@@ -46,6 +49,8 @@ def download(title: str):
 
 @app.command()
 def explore():
+    line_break_console()
+
     manga_ls = get_mangas(_meta_parser())
 
     manga_obj = ls_manga_prompt(manga_ls)
@@ -54,6 +59,9 @@ def explore():
 
     chapter_obj = ls_chapter_prompt(chapter_ls)
 
-    page_meta = get_page_meta(_meta_parser(chapter_obj["path"]))
+    if confirm_read_prompt(
+        manga_obj["title"], chapter_obj["title"], chapter_obj["path"]
+    ):
+        raise typer.Exit(0)
 
-    page_meta_console(page_meta, chapter_obj["path"])
+    explore()
