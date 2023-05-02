@@ -73,7 +73,11 @@ class MangaDexClient:
     def list_chapters(self, manga_id: str, language: str = "en") -> tuple[bool, dict]:
         URL = f"{BASE_URL}/manga/{manga_id}/feed"
 
-        PARAMS = {"translatedLanguage[]": language}
+        PARAMS = {
+            "translatedLanguage[]": language,
+            "order[volume]": "asc",
+            "order[chapter]": "asc",
+        }
 
         return self.handler(URL, PARAMS)
 

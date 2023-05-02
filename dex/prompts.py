@@ -54,9 +54,12 @@ def choose_chapter_prompt(results: dict) -> tuple[str, str]:
 
         page_count = result["attributes"]["pages"]
 
+        volume = result["attributes"]["volume"]
+        chapter = result["attributes"]["chapter"]
+
         choice_map[str(choice)] = result
 
-        console.print(f"({choice}) {title} - Pages: {page_count}")
+        console.print(f"({choice}) {title} - {volume}/{chapter} - Pages: {page_count}")
 
     chapter_obj = choice_map[
         Prompt.ask(
