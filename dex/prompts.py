@@ -1,11 +1,14 @@
+import json
 import os
+from datetime import datetime
 
 import typer
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
 
 from dex.client import MangaDexClient
-from dex.utils import _open_chapter
+from dex.config import DEFAULT_STORAGE_PATH
+from dex.utils import _get_dirs, _open_chapter
 
 console = Console()
 err_console = Console(stderr=True)
@@ -41,7 +44,7 @@ def choose_manga_prompt(results: dict) -> tuple[str, str]:
     return manga_obj["id"], manga_obj["attributes"]["title"]["en"]
 
 
-def choose_chapter_prompt(results: dict) -> tuple[str, str]:
+def choose_chapter_prompt(results: dict) -> tuple[str, dict]:
     if not results["data"]:
         err_console.print("No results found.")
 
@@ -69,15 +72,15 @@ def choose_chapter_prompt(results: dict) -> tuple[str, str]:
         )
     ]
 
-    return chapter_obj["id"], chapter_obj["attributes"]["title"]
+    return chapter_obj["id"], chapter_obj["attributes"]
 
 
 def confirm_download_prompt(
-    client_obj: MangaDexClient, chapter_id: str, manga_title: str, chapter_title: str
+    client_obj: MangaDexClient, chapter_id: str, manga_title: str, chapter_attr: dict
 ) -> None:
-    if Confirm.ask(f"Do you want to download {manga_title} - {chapter_title}?"):
+    if Confirm.ask(f"Do you want to download {manga_title} - {chapter_attr['title']}?"):
         _status, error = client_obj.download_chapter(
-            chapter_id, manga_title, chapter_title
+            chapter_id, manga_title, chapter_attr
         )
 
         if not _status:
@@ -90,54 +93,60 @@ def confirm_download_prompt(
     raise typer.Exit(code=0)
 
 
-def ls_manga_prompt(manga_ls: list) -> dict:
-    choice_map = {}
+def confirm_read_prompt(chapter_path: str) -> bool:
+    is_read = False
 
-    for choice, result in enumerate(manga_ls, 1):
-        title = result["title"]
+    _meta_path = f"{chapter_path}/_meta.json"
 
-        choice_map[str(choice)] = result
+    with open(_meta_path, "r") as _meta_json_r:
+        _meta_json_obj = json.loads(_meta_json_r.read())
 
-        console.print(f"({choice}) {title}")
+        if Confirm.ask(
+            f"Do you want to read {_meta_json_obj['manga']} -"
+            f" {_meta_json_obj['chapter']}? - Last read at"
+            f" {_meta_json_obj['last_read_at']}"
+        ):
+            _open_chapter(chapter_path)
 
-    manga_obj = choice_map[
+            is_read = True
+
+    if is_read:
+        with open(_meta_path, "w") as _meta_json_w:
+            _meta_json_obj["last_read_at"] = str(datetime.now().date())
+
+            _meta_json_w.write(json.dumps(_meta_json_obj))
+
+    return is_read
+
+
+def ls_dir(path: str = "") -> None:
+    curr_path = path or DEFAULT_STORAGE_PATH
+
+    paths = os.listdir(curr_path)
+
+    if "_meta.json" in paths:
+        if confirm_read_prompt(curr_path):
+            raise typer.Exit(code=0)
+
+    _dirs = _get_dirs(curr_path, paths)
+
+    choice_map = {
+        "0": "../",
+    }
+
+    console.print("(0) <back>")
+
+    for choice, _dir in enumerate(_dirs, 1):
+        choice_map[str(choice)] = _dir
+
+        console.print(f"({choice}) {_dir}")
+
+    _selected_dir = choice_map[
         Prompt.ask(
-            "Which one would you like to explore?",
+            "Please choose directory",
             choices=choice_map.keys(),
             show_choices=False,
         )
     ]
 
-    return manga_obj
-
-
-def ls_chapter_prompt(chapter_ls: list) -> dict:
-    choice_map = {}
-
-    for choice, result in enumerate(chapter_ls, 1):
-        title = result["title"]
-
-        choice_map[str(choice)] = result
-
-        console.print(f"({choice}) {title}")
-
-    chapter_obj = choice_map[
-        Prompt.ask(
-            "Which one would you like to read?",
-            choices=choice_map.keys(),
-            show_choices=False,
-        )
-    ]
-
-    return chapter_obj
-
-
-def confirm_read_prompt(
-    manga_title: str, chapter_title: str, chapter_path: str
-) -> bool:
-    if Confirm.ask(f"Do you want to read {manga_title} - {chapter_title}?"):
-        _open_chapter(chapter_path)
-
-        return True
-
-    return False
+    ls_dir(f"{curr_path}/{_selected_dir}")

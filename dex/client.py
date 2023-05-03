@@ -5,6 +5,7 @@ import requests
 from rich.progress import track
 
 from dex.config import BASE_URL, DEFAULT_STORAGE_PATH
+from dex.db import create_chapter_meta
 
 
 class MangaDexClient:
@@ -82,7 +83,7 @@ class MangaDexClient:
         return self.handler(URL, PARAMS)
 
     def download_chapter(
-        self, chapter_id: str, manga_title: str, chapter_title: str
+        self, chapter_id: str, manga_title: str, chapter_attr: dict
     ) -> tuple[bool, str]:
         URL = f"{BASE_URL}/at-home/server/{chapter_id}"
 
@@ -102,8 +103,18 @@ class MangaDexClient:
 
         dl_path = (
             f"{DEFAULT_STORAGE_PATH}/{self._parse_title(manga_title)}"
-            f"/{self._parse_title(chapter_title)}"
+            f"/{self._parse_title(chapter_attr['title'])}"
         )
+
+        manga_volume = chapter_attr["volume"]
+
+        if manga_volume:
+            dl_path += f"_{manga_volume}"
+
+        manga_chapter = chapter_attr["chapter"]
+
+        if manga_chapter:
+            dl_path += f"_{manga_chapter}"
 
         os.makedirs(dl_path, exist_ok=True)
 
@@ -111,5 +122,7 @@ class MangaDexClient:
             self.dl_threaded(dl_links, dl_path)
         except Exception as e:
             return False, str(e)
+        else:
+            create_chapter_meta(dl_path, manga_title, chapter_attr["title"])
 
         return True, ""
