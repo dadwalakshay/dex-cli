@@ -6,7 +6,7 @@ from PIL import Image
 from rich.progress import track
 
 from dex.config import BASE_URL, DEFAULT_STORAGE_PATH
-from dex.db import create_chapter_meta
+from dex.db import create_or_update_chapter_meta
 
 
 class MangaDexClient:
@@ -165,6 +165,6 @@ class MangaDexClient:
         except Exception as e:
             return False, str(e)
         else:
-            create_chapter_meta(dl_path, manga_obj, chapter_obj)
+            create_or_update_chapter_meta(dl_path, manga_obj, chapter_obj)
 
         return True, ""
