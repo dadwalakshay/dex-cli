@@ -18,7 +18,7 @@ def line_break_console() -> None:
     console.print(f"\n{os.get_terminal_size().columns * '+'}\n")
 
 
-def choose_manga_prompt(results: dict) -> tuple[str, str]:
+def choose_manga_prompt(results: dict) -> dict:
     if not results["data"]:
         err_console.print("No results found.")
 
@@ -41,10 +41,10 @@ def choose_manga_prompt(results: dict) -> tuple[str, str]:
         )
     ]
 
-    return manga_obj["id"], manga_obj["attributes"]["title"]["en"]
+    return manga_obj
 
 
-def choose_chapter_prompt(results: dict) -> tuple[str, dict]:
+def choose_chapter_prompt(results: dict) -> dict:
     if not results["data"]:
         err_console.print("No results found.")
 
@@ -72,16 +72,17 @@ def choose_chapter_prompt(results: dict) -> tuple[str, dict]:
         )
     ]
 
-    return chapter_obj["id"], chapter_obj["attributes"]
+    return chapter_obj
 
 
 def confirm_download_prompt(
-    client_obj: MangaDexClient, chapter_id: str, manga_title: str, chapter_attr: dict
+    client_obj: MangaDexClient, manga_obj: dict, chapter_obj: dict
 ) -> None:
-    if Confirm.ask(f"Do you want to download {manga_title} - {chapter_attr['title']}?"):
-        _status, error = client_obj.download_chapter(
-            chapter_id, manga_title, chapter_attr
-        )
+    if Confirm.ask(
+        f"Do you want to download {manga_obj['attributes']['title']['en']} -"
+        f" {chapter_obj['attributes']['title']}?"
+    ):
+        _status, error = client_obj.download_chapter(manga_obj, chapter_obj)
 
         if not _status:
             console.print(error)
@@ -102,8 +103,9 @@ def confirm_read_prompt(chapter_path: str) -> bool:
         _meta_json_obj = json.loads(_meta_json_r.read())
 
         if Confirm.ask(
-            f"Do you want to read {_meta_json_obj['manga']} -"
-            f" {_meta_json_obj['chapter']}? - Last read at"
+            "Do you want to read"
+            f" {_meta_json_obj['manga']['attributes']['title']['en']} -"
+            f" {_meta_json_obj['chapter']['attributes']['title']}? - Last read at"
             f" {_meta_json_obj['last_read_at']}"
         ):
             _open_chapter(chapter_path)

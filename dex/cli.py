@@ -29,18 +29,18 @@ def download(title: str):
 
         raise typer.Exit(code=1)
 
-    manga_id, manga_title = choose_manga_prompt(manga_results)
+    manga_obj = choose_manga_prompt(manga_results)
 
-    _status, chapter_results = client_obj.list_chapters(manga_id)
+    _status, chapter_results = client_obj.list_chapters(manga_obj)
 
     if not _status:
         err_console.print(chapter_results["errors"])
 
         raise typer.Exit(code=1)
 
-    chapter_id, chapter_attr = choose_chapter_prompt(chapter_results)
+    chapter_obj = choose_chapter_prompt(chapter_results)
 
-    confirm_download_prompt(client_obj, chapter_id, manga_title, chapter_attr)
+    confirm_download_prompt(client_obj, manga_obj, chapter_obj)
 
 
 @app.command()

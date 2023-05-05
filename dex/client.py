@@ -2,6 +2,7 @@ import os
 import uuid
 
 import requests
+from PIL import Image
 from rich.progress import track
 
 from dex.config import BASE_URL, DEFAULT_STORAGE_PATH
@@ -15,6 +16,14 @@ class MangaDexClient:
     @staticmethod
     def _parse_title(title: str) -> str:
         return "_".join(title.strip().split())
+
+    @staticmethod
+    def _ordered_filename(filename: str, splitter: str = "-") -> str:
+        _split_filename = filename.split(splitter)
+
+        _split_filename[0] = _split_filename[0].zfill(2)
+
+        return splitter.join(_split_filename)
 
     @staticmethod
     def _parse_error_resp(resp) -> str:
@@ -47,12 +56,16 @@ class MangaDexClient:
     def dl_link_builder(host_url: str, chapter_hash: str, page: str):
         return f"{host_url}/data/{chapter_hash}/{page}"
 
-    @staticmethod
-    def dl_threaded(links: list, path: str) -> bool:
-        for page_link in track(links, description="Downloading chapter..."):
-            filename = page_link.split("/")[-1]
+    @classmethod
+    def dl_threaded(cls, links: list, path: str) -> bool:
+        _ext = links[0].split(".")[-1]
 
-            file_path = f"{path}/{filename}"
+        for page_link in track(links, description="Downloading chapter..."):
+            raw_filename = page_link.split("/")[-1]
+
+            ordered_filename = cls._ordered_filename(raw_filename)
+
+            file_path = f"{path}/{ordered_filename}"
 
             if not os.path.exists(file_path):
                 with requests.get(page_link, stream=True) as r_ctx:
@@ -62,7 +75,33 @@ class MangaDexClient:
                         for chunk in r_ctx.iter_content(chunk_size=8192):
                             page.write(chunk)
 
+        cls._pdf_builder(path, _ext)
+
         return True
+
+    @staticmethod
+    def _pdf_builder(path: str, ext: str) -> None:
+        filename_ls = os.listdir(path)
+
+        sorted_filename_iter = filter(
+            lambda filename: ext in filename, sorted(filename_ls)
+        )
+
+        pil_image_ls = list(
+            map(
+                lambda filename: Image.open(f"{path}/{filename}").convert("RGB"),
+                sorted_filename_iter,
+            )
+        )
+
+        if pil_image_ls:
+            pil_image_ls[0].save(
+                f"{path}/dl.pdf", save_all=True, append_images=pil_image_ls[1:]
+            )
+
+            os.system(f"rm -r {path}/*.{ext}")
+
+        return
 
     def search(self, title: str) -> tuple[bool, dict]:
         URL = f"{BASE_URL}/manga"
@@ -71,8 +110,8 @@ class MangaDexClient:
 
         return self.handler(URL, PARAMS)
 
-    def list_chapters(self, manga_id: str, language: str = "en") -> tuple[bool, dict]:
-        URL = f"{BASE_URL}/manga/{manga_id}/feed"
+    def list_chapters(self, manga_obj: dict, language: str = "en") -> tuple[bool, dict]:
+        URL = f"{BASE_URL}/manga/{manga_obj['id']}/feed"
 
         PARAMS = {
             "translatedLanguage[]": language,
@@ -82,10 +121,8 @@ class MangaDexClient:
 
         return self.handler(URL, PARAMS)
 
-    def download_chapter(
-        self, chapter_id: str, manga_title: str, chapter_attr: dict
-    ) -> tuple[bool, str]:
-        URL = f"{BASE_URL}/at-home/server/{chapter_id}"
+    def download_chapter(self, manga_obj: dict, chapter_obj: dict) -> tuple[bool, str]:
+        URL = f"{BASE_URL}/at-home/server/{chapter_obj['id']}"
 
         _status, response = self.handler(URL)
 
@@ -95,6 +132,7 @@ class MangaDexClient:
         host_base_url = response["baseUrl"]
 
         chapter_hash = response["chapter"]["hash"]
+        chapter_attr = chapter_obj["attributes"]
 
         dl_links = [
             self.dl_link_builder(host_base_url, chapter_hash, page)
@@ -102,7 +140,8 @@ class MangaDexClient:
         ]
 
         dl_path = (
-            f"{DEFAULT_STORAGE_PATH}/{self._parse_title(manga_title)}"
+            f"{DEFAULT_STORAGE_PATH}"
+            f"/{self._parse_title(manga_obj['attributes']['title']['en'])}"
             f"/{self._parse_title(chapter_attr['title'])}"
         )
 
@@ -123,6 +162,6 @@ class MangaDexClient:
         except Exception as e:
             return False, str(e)
         else:
-            create_chapter_meta(dl_path, manga_title, chapter_attr["title"])
+            create_chapter_meta(dl_path, manga_obj, chapter_obj)
 
         return True, ""
