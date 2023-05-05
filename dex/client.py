@@ -21,7 +21,10 @@ class MangaDexClient:
     def _ordered_filename(filename: str, splitter: str = "-") -> str:
         _split_filename = filename.split(splitter)
 
-        _split_filename[0] = _split_filename[0].zfill(2)
+        if _split_filename[0].isdigit():
+            _split_filename[0] = _split_filename[0].zfill(2)
+        else:
+            _split_filename[0] = _split_filename[0][1:].zfill(2)
 
         return splitter.join(_split_filename)
 
@@ -58,8 +61,6 @@ class MangaDexClient:
 
     @classmethod
     def dl_threaded(cls, links: list, path: str) -> bool:
-        _ext = links[0].split(".")[-1]
-
         for page_link in track(links, description="Downloading chapter..."):
             raw_filename = page_link.split("/")[-1]
 
@@ -75,16 +76,17 @@ class MangaDexClient:
                         for chunk in r_ctx.iter_content(chunk_size=8192):
                             page.write(chunk)
 
-        cls._pdf_builder(path, _ext)
+        cls._pdf_builder(path)
 
         return True
 
     @staticmethod
-    def _pdf_builder(path: str, ext: str) -> None:
+    def _pdf_builder(path: str) -> None:
         filename_ls = os.listdir(path)
 
         sorted_filename_iter = filter(
-            lambda filename: ext in filename, sorted(filename_ls)
+            lambda filename: ".json" not in filename and ".pdf" not in filename,
+            sorted(filename_ls),
         )
 
         pil_image_ls = list(
@@ -99,7 +101,8 @@ class MangaDexClient:
                 f"{path}/dl.pdf", save_all=True, append_images=pil_image_ls[1:]
             )
 
-            os.system(f"rm -r {path}/*.{ext}")
+            # Uncomment this if you want to enable auto-clean-up of downloaded images
+            # os.system(f"rm -r {path}/*.{ext}")
 
         return
 
