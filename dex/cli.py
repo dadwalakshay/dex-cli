@@ -1,5 +1,4 @@
 import typer
-from dotenv import load_dotenv
 
 from dex.integrations import ClientFactory
 from dex.prompts import (
@@ -10,8 +9,6 @@ from dex.prompts import (
     line_break_console,
     ls_dir,
 )
-
-load_dotenv()
 
 app = typer.Typer()
 
