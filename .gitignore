@@ -160,5 +160,5 @@ cython_debug/
 #.idea/
 
 # Ignored local dirs
-mangadex/
+manga_dl/
 _meta.json

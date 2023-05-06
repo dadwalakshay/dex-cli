@@ -1,7 +1,7 @@
 import typer
 from dotenv import load_dotenv
 
-from dex.client import MangaDexClient
+from dex.integrations import ClientFactory
 from dex.prompts import (
     choose_chapter_prompt,
     choose_manga_prompt,
@@ -17,12 +17,12 @@ app = typer.Typer()
 
 
 @app.command()
-def download(title: str):
+def download(title: str, code: str = ""):
     line_break_console()
 
-    client_obj = MangaDexClient()
+    client_obj = ClientFactory(code=code)
 
-    _status, manga_results = client_obj.search(title)
+    _status, manga_results = client_obj.list_mangas(title)
 
     if not _status:
         err_console.print(manga_results["errors"])

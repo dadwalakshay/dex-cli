@@ -6,8 +6,8 @@ import typer
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
 
-from dex.client import MangaDexClient
 from dex.config import _META_STORE, DEFAULT_STORAGE_PATH
+from dex.integrations.base import BaseClient
 from dex.utils import _get_dirs, _open_chapter
 
 console = Console()
@@ -76,7 +76,7 @@ def choose_chapter_prompt(results: dict) -> dict:
 
 
 def confirm_download_prompt(
-    client_obj: MangaDexClient, manga_obj: dict, chapter_obj: dict
+    client_obj: BaseClient, manga_obj: dict, chapter_obj: dict
 ) -> None:
     if Confirm.ask(
         f"Do you want to download {manga_obj['attributes']['title']['en']} -"
