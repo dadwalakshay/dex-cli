@@ -14,6 +14,11 @@ class BaseClient(ABC):
 
     @staticmethod
     @abstractmethod
+    def _ordered_filename(*args, **kwargs):
+        return
+
+    @classmethod
+    @abstractmethod
     def _parse_error_resp(*args, **kwargs):
         return
 
@@ -39,17 +44,30 @@ class BaseClient(ABC):
         return "_".join(title.strip().split())
 
     @staticmethod
-    def _ordered_filename(filename: str, splitter: str = "-") -> str:
-        _split_filename = filename.split(splitter)
+    def _pdf_builder(path: str) -> None:
+        filename_ls = os.listdir(path)
 
-        if _split_filename[0].isdigit():
-            _split_filename[0] = _split_filename[0].zfill(2)
-        else:
-            _split_filename[
-                0
-            ] = f"{_split_filename[0][:1]}{_split_filename[0][1:].zfill(2)}"
+        sorted_filename_iter = filter(
+            lambda filename: (".json" not in filename) and (".pdf" not in filename),
+            sorted(filename_ls),
+        )
 
-        return splitter.join(_split_filename)
+        pil_image_ls = list(
+            map(
+                lambda filename: Image.open(f"{path}/{filename}").convert("RGB"),
+                sorted_filename_iter,
+            )
+        )
+
+        if pil_image_ls:
+            pil_image_ls[0].save(
+                f"{path}/{DEFAULT_PDF_NAME}",
+                save_all=True,
+                append_images=pil_image_ls[1:],
+            )
+
+            # Uncomment this if you want to enable auto-clean-up of downloaded images
+            # os.system(f"rm -r {path}/*.{ext}")
 
     @staticmethod
     def dl_link_builder(host_url: str, chapter_hash: str, page: str):
@@ -75,31 +93,3 @@ class BaseClient(ABC):
         cls._pdf_builder(path)
 
         return True
-
-    @staticmethod
-    def _pdf_builder(path: str) -> None:
-        filename_ls = os.listdir(path)
-
-        sorted_filename_iter = filter(
-            lambda filename: ".json" not in filename and ".pdf" not in filename,
-            sorted(filename_ls),
-        )
-
-        pil_image_ls = list(
-            map(
-                lambda filename: Image.open(f"{path}/{filename}").convert("RGB"),
-                sorted_filename_iter,
-            )
-        )
-
-        if pil_image_ls:
-            pil_image_ls[0].save(
-                f"{path}/{DEFAULT_PDF_NAME}",
-                save_all=True,
-                append_images=pil_image_ls[1:],
-            )
-
-            # Uncomment this if you want to enable auto-clean-up of downloaded images
-            # os.system(f"rm -r {path}/*.{ext}")
-
-        return
