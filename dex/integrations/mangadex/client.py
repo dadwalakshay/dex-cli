@@ -102,21 +102,17 @@ class MangaDexClient(BaseClient):
             for page in response["chapter"]["data"]
         ]
 
+        chapter_dir = (
+            f"{chapter_attr['volume'] or '0'}"
+            f"_{chapter_attr['chapter'] or '0'}"
+            f"_{self._parse_title(chapter_attr['title'])}"
+        )
+
         dl_path = (
             f"{DEFAULT_STORAGE_PATH}"
             f"/{self._parse_title(manga_obj['attributes']['title']['en'])}"
-            f"/{self._parse_title(chapter_attr['title'])}"
+            f"/{chapter_dir}"
         )
-
-        manga_volume = chapter_attr["volume"]
-
-        if manga_volume:
-            dl_path += f"_{manga_volume}"
-
-        manga_chapter = chapter_attr["chapter"]
-
-        if manga_chapter:
-            dl_path += f"_{manga_chapter}"
 
         os.makedirs(dl_path, exist_ok=True)
 

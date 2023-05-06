@@ -106,7 +106,7 @@ def ls_dir(path: str = "") -> None:
         if confirm_read_prompt(curr_path):
             raise typer.Exit(code=0)
 
-    _dirs = _get_dirs(curr_path, paths)
+    _dirs = sorted(_get_dirs(curr_path, paths))
 
     choice_map = {
         "0": "../",
