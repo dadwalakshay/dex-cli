@@ -14,24 +14,13 @@ console = Console()
 err_console = Console(stderr=True)
 
 
-def line_break_console() -> None:
-    console.print(f"\n{os.get_terminal_size().columns * '+'}\n")
+def choose_manga_prompt(client: BaseClient, results: dict) -> dict:
+    choice_map = client.get_manga_choices(results, console)
 
-
-def choose_manga_prompt(results: dict) -> dict:
-    if not results["data"]:
-        err_console.print("No results found.")
+    if not choice_map:
+        err_console.print("No Mangas found.")
 
         raise typer.Exit(code=1)
-
-    choice_map = {}
-
-    for choice, result in enumerate(results["data"], 1):
-        title = result["attributes"]["title"]["en"]
-
-        choice_map[str(choice)] = result
-
-        console.print(f"({choice}) {title}")
 
     manga_obj = choice_map[
         Prompt.ask(
@@ -44,25 +33,13 @@ def choose_manga_prompt(results: dict) -> dict:
     return manga_obj
 
 
-def choose_chapter_prompt(results: dict) -> dict:
-    if not results["data"]:
-        err_console.print("No results found.")
+def choose_chapter_prompt(client: BaseClient, results: dict) -> dict:
+    choice_map = client.get_chapter_choices(results, console)
+
+    if not choice_map:
+        err_console.print("No Chapters found.")
 
         raise typer.Exit(code=1)
-
-    choice_map = {}
-
-    for choice, result in enumerate(results["data"], 1):
-        title = result["attributes"]["title"]
-
-        page_count = result["attributes"]["pages"]
-
-        volume = result["attributes"]["volume"]
-        chapter = result["attributes"]["chapter"]
-
-        choice_map[str(choice)] = result
-
-        console.print(f"({choice}) {title} - {volume}/{chapter} - Pages: {page_count}")
 
     chapter_obj = choice_map[
         Prompt.ask(
@@ -78,10 +55,9 @@ def choose_chapter_prompt(results: dict) -> dict:
 def confirm_download_prompt(
     client_obj: BaseClient, manga_obj: dict, chapter_obj: dict
 ) -> None:
-    if Confirm.ask(
-        f"Do you want to download {manga_obj['attributes']['title']['en']} -"
-        f" {chapter_obj['attributes']['title']}?"
-    ):
+    manga_title, chapter_title = client_obj.get_titles(manga_obj, chapter_obj)
+
+    if Confirm.ask(f"Do you want to download {manga_title} - {chapter_title}?"):
         _status, error = client_obj.download_chapter(manga_obj, chapter_obj)
 
         if not _status:
@@ -104,8 +80,8 @@ def confirm_read_prompt(chapter_path: str) -> bool:
 
         if Confirm.ask(
             "Do you want to read"
-            f" {_meta_json_obj['manga']['attributes']['title']['en']} -"
-            f" {_meta_json_obj['chapter']['attributes']['title']}? - Last read at"
+            f" {_meta_json_obj['manga_title']} -"
+            f" {_meta_json_obj['chapter_title']}? - Last read at"
             f" {_meta_json_obj['last_read_at']}"
         ):
             _open_file(f"{chapter_path}/{DEFAULT_PDF_NAME}")

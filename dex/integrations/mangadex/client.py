@@ -1,6 +1,7 @@
 import os
 
 import requests
+from rich.console import Console
 
 from dex.config import DEFAULT_STORAGE_PATH
 from dex.db import create_or_update_chapter_meta
@@ -28,6 +29,42 @@ class MangaDexClient(BaseClient):
             return False, {"errors": cls._parse_error_resp(response)}
 
         return True, response.json()
+
+    @staticmethod
+    def get_manga_choices(manga_ls: dict, console: Console) -> dict:
+        choice_map = {}
+
+        for choice, manga in enumerate(manga_ls["data"], 1):
+            choice_map[str(choice)] = manga
+
+            console.print(f"({choice}) {manga['attributes']['title']['en']}")
+
+        return choice_map
+
+    @staticmethod
+    def get_chapter_choices(chapter_ls: dict, console: Console) -> dict:
+        choice_map = {}
+
+        for choice, chapter in enumerate(chapter_ls["data"], 1):
+            title = chapter["attributes"]["title"]
+
+            page_count = chapter["attributes"]["pages"]
+
+            volume_count = chapter["attributes"]["volume"]
+            chapter_count = chapter["attributes"]["chapter"]
+
+            choice_map[str(choice)] = chapter
+
+            console.print(
+                f"({choice}) {title} - {volume_count}/{chapter_count} - Pages:"
+                f" {page_count}"
+            )
+
+        return choice_map
+
+    @staticmethod
+    def get_titles(manga: dict, chapter: dict) -> tuple[str, str]:
+        return manga["attributes"]["title"]["en"], chapter["attributes"]["title"]
 
     def list_mangas(self, title: str) -> tuple[bool, dict]:
         URL = f"{self.BASE_URL}/manga"
@@ -90,7 +127,14 @@ class MangaDexClient(BaseClient):
 
             pdf_generator.generate()
 
-            create_or_update_chapter_meta(dl_path, manga_obj, chapter_obj)
+            _meta = {"manga": manga_obj, "chapter": chapter_obj}
+
+            create_or_update_chapter_meta(
+                dl_path,
+                manga_obj["attributes"]["title"]["en"],
+                chapter_obj["attributes"]["title"],
+                _meta,
+            )
 
             return True, ""
 

@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 
 import requests
+from rich.console import Console
 
 from dex.config import DEFAULT_STORAGE_PATH
 
@@ -19,6 +20,21 @@ class BaseClient(ABC):
     @abstractmethod
     def handler(cls, url: str, params: dict = {}, json: dict = {}) -> tuple[bool, dict]:
         return True, {}
+
+    @staticmethod
+    @abstractmethod
+    def get_manga_choices(manga_ls: dict, console: Console) -> dict:
+        return {}
+
+    @staticmethod
+    @abstractmethod
+    def get_chapter_choices(manga_ls: dict, console: Console) -> dict:
+        return {}
+
+    @staticmethod
+    @abstractmethod
+    def get_titles(manga: dict, chapter: dict) -> tuple[str, str]:
+        return "", ""
 
     @abstractmethod
     def list_mangas(self, title: str) -> tuple[bool, dict]:
