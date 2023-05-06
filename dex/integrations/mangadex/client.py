@@ -5,26 +5,14 @@ import requests
 from dex.config import DEFAULT_STORAGE_PATH
 from dex.db import create_or_update_chapter_meta
 from dex.integrations.base import BaseClient
+from dex.utils import BulkDownloader, PDFGenerator
 
 
 class MangaDexClient(BaseClient):
     BASE_URL = "https://api.mangadex.org"
 
-    @staticmethod
-    def _ordered_filename(filename: str, splitter: str = "-") -> str:
-        _split_filename = filename.split(splitter)
-
-        if _split_filename[0].isdigit():
-            _split_filename[0] = _split_filename[0].zfill(2)
-        else:
-            _split_filename[
-                0
-            ] = f"{_split_filename[0][:1]}{_split_filename[0][1:].zfill(2)}"
-
-        return splitter.join(_split_filename)
-
     @classmethod
-    def _parse_error_resp(cls, resp) -> str:
+    def _parse_error_resp(cls, resp: requests.Response) -> str:
         if resp.status_code >= 500:
             return f"{cls.BASE_URL} service(s) are down."
 
@@ -65,7 +53,7 @@ class MangaDexClient(BaseClient):
         _status, response = self.handler(URL)
 
         if not _status:
-            return _status, response
+            return _status, response["errors"]
 
         host_base_url = response["baseUrl"]
 
@@ -95,11 +83,15 @@ class MangaDexClient(BaseClient):
 
         os.makedirs(dl_path, exist_ok=True)
 
-        try:
-            self.dl_threaded(dl_links, dl_path)
-        except Exception as e:
-            return False, str(e)
-        else:
+        bulk_downloader = BulkDownloader(dl_links, dl_path)
+
+        if dl_filenames := bulk_downloader.download():
+            pdf_generator = PDFGenerator(dl_filenames, dl_path)
+
+            pdf_generator.generate()
+
             create_or_update_chapter_meta(dl_path, manga_obj, chapter_obj)
 
-        return True, ""
+            return True, ""
+
+        return False, "Download failed."

@@ -2,8 +2,8 @@ import os
 import subprocess
 
 
-def _open_chapter(path: str) -> None:
-    subprocess.Popen(["xdg-open", f"{path}/dl.pdf"])
+def _open_file(path: str) -> None:
+    subprocess.Popen(["xdg-open", path])
 
 
 def _get_dirs(curr_path: str, paths: list[str]) -> list[str]:

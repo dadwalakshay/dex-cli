@@ -6,9 +6,9 @@ import typer
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
 
-from dex.config import _META_STORE, DEFAULT_STORAGE_PATH
+from dex.config import _META_STORE, DEFAULT_PDF_NAME, DEFAULT_STORAGE_PATH
 from dex.integrations.base import BaseClient
-from dex.utils import _get_dirs, _open_chapter
+from dex.utils import _get_dirs, _open_file
 
 console = Console()
 err_console = Console(stderr=True)
@@ -36,7 +36,7 @@ def choose_manga_prompt(results: dict) -> dict:
     manga_obj = choice_map[
         Prompt.ask(
             "Which one would you like to explore?",
-            choices=choice_map.keys(),
+            choices=list(choice_map.keys()),
             show_choices=False,
         )
     ]
@@ -67,7 +67,7 @@ def choose_chapter_prompt(results: dict) -> dict:
     chapter_obj = choice_map[
         Prompt.ask(
             "Which chapter you want to download?",
-            choices=choice_map.keys(),
+            choices=list(choice_map.keys()),
             show_choices=False,
         )
     ]
@@ -108,7 +108,7 @@ def confirm_read_prompt(chapter_path: str) -> bool:
             f" {_meta_json_obj['chapter']['attributes']['title']}? - Last read at"
             f" {_meta_json_obj['last_read_at']}"
         ):
-            _open_chapter(chapter_path)
+            _open_file(f"{chapter_path}/{DEFAULT_PDF_NAME}")
 
             is_read = True
 
@@ -146,7 +146,7 @@ def ls_dir(path: str = "") -> None:
     _selected_dir = choice_map[
         Prompt.ask(
             "Please choose directory",
-            choices=choice_map.keys(),
+            choices=list(choice_map.keys()),
             show_choices=False,
         )
     ]

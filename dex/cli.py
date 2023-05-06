@@ -14,10 +14,10 @@ app = typer.Typer()
 
 
 @app.command()
-def download(title: str, code: str = ""):
-    line_break_console()
+def download(title: str, code: str = "") -> None:
+    client_factory_obj = ClientFactory()
 
-    client_obj = ClientFactory(code=code)
+    client_obj = client_factory_obj.get_client(code)
 
     _status, manga_results = client_obj.list_mangas(title)
 
@@ -41,7 +41,7 @@ def download(title: str, code: str = ""):
 
 
 @app.command()
-def explore():
+def explore() -> None:
     line_break_console()
 
     ls_dir()

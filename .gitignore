@@ -162,3 +162,4 @@ cython_debug/
 # Ignored local dirs
 manga_dl/
 _meta.json
+.vscode
