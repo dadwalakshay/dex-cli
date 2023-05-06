@@ -9,10 +9,6 @@ load_dotenv(override=True)
 
 
 if __name__ == "__main__":
-    import ipdb
-
     from dex.cli import app
-
-    ipdb.set_trace()
 
     app()
