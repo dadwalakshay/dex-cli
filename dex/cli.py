@@ -14,9 +14,7 @@ app = typer.Typer()
 
 @app.command()
 def download(title: str, code: str = "") -> None:
-    client_factory_obj = ClientFactory()
-
-    client_obj = client_factory_obj.get_client(code)
+    client_obj = ClientFactory.get_client(code)
 
     _status, manga_results = client_obj.list_mangas(title)
 
