@@ -103,8 +103,8 @@ class MangaDexClient(BaseClient):
         ]
 
         chapter_dir = (
-            f"{chapter_attr['volume'] or '0'}"
-            f"_{chapter_attr['chapter'] or '0'}"
+            f"{chapter_attr['volume'].zfill(3)}"
+            f"_{chapter_attr['chapter'].zfill(3)}"
             f"_{self._parse_title(chapter_attr['title'])}"
         )
 
