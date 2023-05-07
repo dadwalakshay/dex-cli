@@ -2,11 +2,18 @@ import json
 import os
 from datetime import datetime
 
+import requests
 import typer
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
 
-from dex.config import _META_STORE, DEFAULT_PDF_NAME, DEFAULT_STORAGE_PATH
+from dex.config import (
+    _META_STORE,
+    DEFAULT_PDF_NAME,
+    DEFAULT_STORAGE_PATH,
+    IS_DISCORD_ENABLED,
+)
+from dex.discord import DiscordClient
 from dex.integrations.base import BaseClient
 from dex.utils import _get_dirs, _open_file
 
@@ -58,12 +65,20 @@ def confirm_download_prompt(
     manga_title, chapter_title = client_obj.get_titles(manga_obj, chapter_obj)
 
     if Confirm.ask(f"Do you want to download {manga_title} - {chapter_title}?"):
-        _status, error = client_obj.download_chapter(manga_obj, chapter_obj)
+        _status, result = client_obj.download_chapter(manga_obj, chapter_obj)
 
         if not _status:
-            console.print(error)
+            console.print(result)
 
             raise typer.Exit(1)
+
+        if IS_DISCORD_ENABLED:
+            discord_client_obj = DiscordClient(result)
+
+            try:
+                discord_client_obj.send_file_webhook()
+            except (requests.HTTPError, requests.ConnectionError, requests.ReadTimeout):
+                err_console.print("Download completed, but Discord webhook failed.")
 
     console.print("Arigato!")
 

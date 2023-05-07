@@ -132,6 +132,6 @@ class MangaDexClient(BaseClient):
                 _meta,
             )
 
-            return True, ""
+            return True, dl_path
 
         return False, "Download failed."
