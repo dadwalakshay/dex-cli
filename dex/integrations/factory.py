@@ -8,9 +8,6 @@ class ClientFactory:
         match code:
             case "mangadex":
                 klass = MangaDexClient
-            case "":
-                # default client when no User input is provided
-                klass = MangaDexClient
             case _:
                 raise NotImplementedError("Un-supported client.")
 
