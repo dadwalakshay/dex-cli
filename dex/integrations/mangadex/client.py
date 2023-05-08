@@ -66,6 +66,10 @@ class MangaDexClient(BaseClient):
     def get_titles(manga: dict, chapter: dict) -> tuple[str, str]:
         return manga["attributes"]["title"]["en"], chapter["attributes"]["title"]
 
+    @staticmethod
+    def dl_link_builder(host_url: str, chapter_hash: str, page: str) -> str:
+        return f"{host_url}/data/{chapter_hash}/{page}"
+
     def list_mangas(self, title: str) -> tuple[bool, dict]:
         URL = f"{self.BASE_URL}/manga"
 

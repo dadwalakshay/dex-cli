@@ -49,9 +49,10 @@ class BaseClient(ABC):
         return True, ""
 
     @staticmethod
-    def _parse_title(title: str) -> str:
-        return "_".join(title.strip().split())
+    @abstractmethod
+    def dl_link_builder(*args, **kwargs) -> str:
+        return ""
 
     @staticmethod
-    def dl_link_builder(host_url: str, chapter_hash: str, page: str) -> str:
-        return f"{host_url}/data/{chapter_hash}/{page}"
+    def _parse_title(title: str) -> str:
+        return "_".join(title.strip().split())
