@@ -9,10 +9,10 @@ def read_chapter_meta(chapter_path: str) -> dict:
     try:
         with open(_meta_path, "r") as _meta_json_r:
             _meta_json_obj = json.loads(_meta_json_r.read())
-
-            return _meta_json_obj
     except FileNotFoundError:
-        return {}
+        _meta_json_obj = {}
+
+    return _meta_json_obj
 
 
 def create_or_update_chapter_meta(
