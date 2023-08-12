@@ -26,8 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install pipenv==2022.9.24
-        pipenv --python `which python3` install pytest
-        pipenv --python `which python3` install pytest --system --deploy
+        pipenv --python `which python3` install --system --deploy
     - name: Test with pytest
       run: |
         pytest
