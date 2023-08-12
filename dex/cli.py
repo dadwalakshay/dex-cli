@@ -13,7 +13,7 @@ app = typer.Typer()
 
 
 @app.command()
-def download(title: str, code: str = "") -> None:
+def download(title: str, code: str = "mangadex") -> None:
     client_obj = ClientFactory.get_client(code)
 
     _status, manga_results = client_obj.list_mangas(title)
