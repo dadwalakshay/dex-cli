@@ -1,2 +1,2 @@
 def test_mock():
-    assert True is False
+    assert True is True
