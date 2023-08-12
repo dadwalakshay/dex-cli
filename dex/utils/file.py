@@ -11,7 +11,7 @@ def _open_file(path: str) -> None:
             subprocess.Popen(["xdg-open", path])
         case _:
             raise OSError(
-                "mangadex-cli currently does not support reading manga on this OS"
+                "mangadex-cli currently does not support reading manga on this OS."
             )
 
 
