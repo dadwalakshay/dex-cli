@@ -40,11 +40,11 @@ class MangaDexClient(BaseClient):
         return chapter["attributes"]["title"]
 
     @staticmethod
-    def get_chapter_volume_num(chapter: dict) -> int:
+    def get_chapter_volume_num(chapter: dict) -> str:
         return chapter["attributes"]["volume"]
 
     @staticmethod
-    def get_chapter_num(chapter: dict) -> int:
+    def get_chapter_num(chapter: dict) -> str:
         return chapter["attributes"]["chapter"]
 
     @staticmethod

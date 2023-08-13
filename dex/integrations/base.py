@@ -26,13 +26,13 @@ class BaseClient(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_chapter_volume_num(chapter: dict) -> int:
-        return 0
+    def get_chapter_volume_num(chapter: dict) -> str:
+        return "0"
 
     @staticmethod
     @abstractmethod
-    def get_chapter_num(chapter: dict) -> int:
-        return 0
+    def get_chapter_num(chapter: dict) -> str:
+        return "0"
 
     @staticmethod
     @abstractmethod
