@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 import typer
-from beaupy import confirm, select, select_multiple
+from beaupy import Config, confirm, select, select_multiple
 from rich.console import Console
 from rich.progress import track
 
@@ -13,7 +13,26 @@ from dex.integrations.base import BaseClient
 from dex.utils import _get_dirs, _open_file
 
 console = Console()
-err_console = Console(stderr=True)
+err_console = Console(stderr=True, style="bold red")
+
+
+Config.raise_on_escape = True
+Config.raise_on_interrupt = True
+
+
+def banner():
+    banner = """  # noqa: E501
+        ███╗   ███╗ █████╗ ███╗   ██╗ ██████╗  █████╗ ██████╗ ███████╗██╗  ██╗       ██████╗██╗     ██╗
+        ████╗ ████║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝      ██╔════╝██║     ██║
+        ██╔████╔██║███████║██╔██╗ ██║██║  ███╗███████║██║  ██║█████╗   ╚███╔╝ █████╗██║     ██║     ██║
+        ██║╚██╔╝██║██╔══██║██║╚██╗██║██║   ██║██╔══██║██║  ██║██╔══╝   ██╔██╗ ╚════╝██║     ██║     ██║
+        ██║ ╚═╝ ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║██████╔╝███████╗██╔╝ ██╗      ╚██████╗███████╗██║
+        ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
+
+        Made by Akshay Dadwal | https://github.com/dadwalakshay | Press "ctrl + c" to quit.
+    """
+
+    console.print(banner)
 
 
 def choose_manga_prompt(client: BaseClient, title: str) -> dict:
@@ -28,7 +47,10 @@ def choose_manga_prompt(client: BaseClient, title: str) -> dict:
 
     manga_obj = resp[
         select(
-            options=[manga["attributes"]["title"]["en"] for manga in resp],
+            options=[manga["attributes"]["title"]["en"] for manga in resp]
+            + [
+                "Quit",
+            ],
             return_index=True,
             pagination=True,
             page_size=10,
@@ -59,6 +81,7 @@ def choose_chapter_prompt(client: BaseClient, manga: dict) -> dict:
             f" {chapter['attributes']['pages']}"
             for chapter in non_empty_chapters
         ],
+        tick_character="x",
         return_indices=True,
         pagination=True,
         page_size=10,
@@ -73,10 +96,10 @@ def confirm_download_prompt(
     client_obj: BaseClient, manga_obj: dict, chapter_objs: list
 ) -> None:
     if confirm(
-        question="Do you want to download selected chapters?",
+        question="Do you want to download selected chapter(s)?",
     ):
         for chapter_obj in track(
-            chapter_objs, description="Downloading selected chapters..."
+            chapter_objs, description="Downloading selected chapter(s)..."
         ):
             _status, result = client_obj.download_chapter(manga_obj, chapter_obj)
 
@@ -143,6 +166,9 @@ def ls_dir(path: str = "") -> None:
             options=[
                 f" {_dir} {('- Last read at ' + (read_chapter_meta(f'{curr_path}/{_dir}').get('last_read_at') or 'N/A'))}"  # noqa: E501
                 for _dir in _dirs
+            ]
+            + [
+                "Quit",
             ],
             return_index=True,
             pagination=True,
