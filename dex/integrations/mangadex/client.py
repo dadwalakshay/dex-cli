@@ -40,28 +40,32 @@ class MangaDexClient(BaseClient):
         return chapter["attributes"]["title"]
 
     @staticmethod
+    def get_chapter_volume_num(chapter: dict) -> int:
+        return chapter["attributes"]["volume"]
+
+    @staticmethod
+    def get_chapter_num(chapter: dict) -> int:
+        return chapter["attributes"]["chapter"]
+
+    @staticmethod
+    def get_chapter_page_count(chapter: dict) -> int:
+        return chapter["attributes"]["pages"]
+
+    @staticmethod
     def dl_link_builder(host_url: str, chapter_hash: str, page: str) -> str:
         return f"{host_url}/data/{chapter_hash}/{page}"
 
-    def get_manga_choices(self, title: str) -> tuple[bool, list | str]:
-        status, resp = self.list_mangas(title)
-
-        return status, resp["data"] if status else resp["errors"]
-
-    def get_chapter_choices(self, manga: dict) -> tuple[bool, list | str]:
-        status, resp = self.list_chapters(manga)
-
-        return status, resp["data"] if status else resp["errors"]
-
-    def list_mangas(self, title: str) -> tuple[bool, dict]:
-        URL = f"{self.BASE_URL}/manga"
+    @classmethod
+    def list_mangas(cls, title: str) -> tuple[bool, dict]:
+        URL = f"{cls.BASE_URL}/manga"
 
         PARAMS = {"title": title}
 
-        return self.handler(URL, PARAMS)
+        return cls.handler(URL, PARAMS)
 
-    def list_chapters(self, manga_obj: dict, language: str = "en") -> tuple[bool, dict]:
-        URL = f"{self.BASE_URL}/manga/{manga_obj['id']}/feed"
+    @classmethod
+    def list_chapters(cls, manga_obj: dict, language: str = "en") -> tuple[bool, dict]:
+        URL = f"{cls.BASE_URL}/manga/{manga_obj['id']}/feed"
 
         PARAMS = {
             "translatedLanguage[]": language,
@@ -69,12 +73,13 @@ class MangaDexClient(BaseClient):
             "order[chapter]": "asc",
         }
 
-        return self.handler(URL, PARAMS)
+        return cls.handler(URL, PARAMS)
 
-    def download_chapter(self, manga_obj: dict, chapter_obj: dict) -> tuple[bool, str]:
-        URL = f"{self.BASE_URL}/at-home/server/{chapter_obj['id']}"
+    @classmethod
+    def download_chapter(cls, manga_obj: dict, chapter_obj: dict) -> tuple[bool, str]:
+        URL = f"{cls.BASE_URL}/at-home/server/{chapter_obj['id']}"
 
-        _status, response = self.handler(URL)
+        _status, response = cls.handler(URL)
 
         if not _status:
             return _status, response["errors"]
@@ -85,19 +90,19 @@ class MangaDexClient(BaseClient):
         chapter_attr = chapter_obj["attributes"]
 
         dl_links = [
-            self.dl_link_builder(host_base_url, chapter_hash, page)
+            cls.dl_link_builder(host_base_url, chapter_hash, page)
             for page in response["chapter"]["data"]
         ]
 
         chapter_dir = (
             f"{chapter_attr['volume'].zfill(3)}"
             f"_{chapter_attr['chapter'].zfill(3)}"
-            f"_{self._parse_title(chapter_attr['title'])}"
+            f"_{cls._parse_title(chapter_attr['title'])}"
         )
 
         dl_path = (
             f"{DEFAULT_STORAGE_PATH}"
-            f"/{self._parse_title(manga_obj['attributes']['title']['en'])}"
+            f"/{cls._parse_title(manga_obj['attributes']['title']['en'])}"
             f"/{chapter_dir}"
         )
 
@@ -122,3 +127,13 @@ class MangaDexClient(BaseClient):
             return True, dl_path
 
         return False, "Download failed."
+
+    def get_manga_choices(self, title: str) -> tuple[bool, list | str]:
+        status, resp = self.list_mangas(title)
+
+        return status, resp["data"] if status else resp["errors"]
+
+    def get_chapter_choices(self, manga: dict) -> tuple[bool, list | str]:
+        status, resp = self.list_chapters(manga)
+
+        return status, resp["data"] if status else resp["errors"]

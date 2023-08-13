@@ -47,7 +47,7 @@ def choose_manga_prompt(client: BaseClient, title: str) -> dict:
 
     manga_obj = resp[
         select(
-            options=[manga["attributes"]["title"]["en"] for manga in resp]
+            options=[client.get_manga_title(manga) for manga in resp]
             + [
                 "Quit",
             ],
@@ -71,15 +71,15 @@ def choose_chapter_prompt(client: BaseClient, manga: dict) -> dict:
     console.print("Which Manga chapter would you like to download?")
 
     non_empty_chapters = list(
-        filter(lambda chapter: chapter["attributes"]["pages"] > 0, resp)
+        filter(lambda chapter: client.get_chapter_page_count(chapter) > 0, resp)
     )
 
     selected_chapter_idx = select_multiple(
         options=[
-            f"Title: {chapter['attributes']['title']} - "
-            f"Volume: {chapter['attributes']['volume']} - "
-            f"Chapter: {chapter['attributes']['chapter']} - "
-            f"Pages: {chapter['attributes']['pages']}"
+            f"Title: {client.get_chapter_title(chapter)} - "
+            f"Volume: {client.get_chapter_volume_num(chapter)} - "
+            f"Chapter: {client.get_chapter_num(chapter)} - "
+            f"Pages: {client.get_chapter_page_count(chapter)}"
             for chapter in non_empty_chapters
         ],
         tick_character="x",
