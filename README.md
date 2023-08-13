@@ -1,2 +1,2 @@
 # mangadex-cli
-CLI tool written in Python3 to download manga from mangadex.org
+![Demo gif or jif or gif or G.I.F](demo.gif)
