@@ -21,7 +21,7 @@ Config.raise_on_interrupt = True
 
 
 def banner():
-    banner = """  # noqa: E501
+    banner = """
         ███╗   ███╗ █████╗ ███╗   ██╗ ██████╗  █████╗ ██████╗ ███████╗██╗  ██╗       ██████╗██╗     ██╗
         ████╗ ████║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝      ██╔════╝██║     ██║
         ██╔████╔██║███████║██╔██╗ ██║██║  ███╗███████║██║  ██║█████╗   ╚███╔╝ █████╗██║     ██║     ██║
@@ -30,7 +30,7 @@ def banner():
         ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
 
         Made by Akshay Dadwal | https://github.com/dadwalakshay | Press "ctrl + c" to quit.
-    """
+    """  # noqa: E501
 
     console.print(banner)
 
@@ -76,9 +76,10 @@ def choose_chapter_prompt(client: BaseClient, manga: dict) -> dict:
 
     selected_chapter_idx = select_multiple(
         options=[
-            f"Title: {chapter['attributes']['title']} - Volume:"
-            f" {chapter['attributes']['chapter']} - Pages:"
-            f" {chapter['attributes']['pages']}"
+            f"Title: {chapter['attributes']['title']} - "
+            f"Volume: {chapter['attributes']['volume']} - "
+            f"Chapter: {chapter['attributes']['chapter']} - "
+            f"Pages: {chapter['attributes']['pages']}"
             for chapter in non_empty_chapters
         ],
         tick_character="x",
