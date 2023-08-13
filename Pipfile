@@ -7,9 +7,9 @@ name = "pypi"
 typer = "==0.7.0"
 requests = "==2.29.0"
 python-dotenv = "==1.0.0"
-rich = "==13.3.5"
 pillow = "==9.5.0"
 pytest = "==7.4.0"
+beaupy = "==3.5.4"
 
 [dev-packages]
 pre-commit = "==3.2.2"

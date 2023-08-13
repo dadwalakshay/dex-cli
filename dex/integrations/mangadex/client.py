@@ -1,7 +1,6 @@
 import os
 
 import requests
-from rich.console import Console
 
 from dex.config import DEFAULT_STORAGE_PATH
 from dex.db import create_or_update_chapter_meta
@@ -10,12 +9,14 @@ from dex.utils import BulkDownloader, PDFGenerator
 
 
 class MangaDexClient(BaseClient):
+    CLIENT_NAME = "MangaDex"
+
     BASE_URL = "https://api.mangadex.org"
 
     @classmethod
     def _parse_error_resp(cls, resp: requests.Response) -> str:
         if resp.status_code >= 500:
-            return f"{cls.BASE_URL} service(s) are down."
+            return f"{cls.CLIENT_NAME} service(s) are down."
 
         error_resp = resp.json()
 
@@ -31,44 +32,26 @@ class MangaDexClient(BaseClient):
         return True, response.json()
 
     @staticmethod
-    def get_manga_choices(manga_ls: dict, console: Console) -> dict:
-        choice_map = {}
-
-        for choice, manga in enumerate(manga_ls["data"], 1):
-            choice_map[str(choice)] = manga
-
-            console.print(f"({choice}) {manga['attributes']['title']['en']}")
-
-        return choice_map
+    def get_manga_title(manga: dict) -> str:
+        return manga["attributes"]["title"]["en"]
 
     @staticmethod
-    def get_chapter_choices(chapter_ls: dict, console: Console) -> dict:
-        choice_map = {}
-
-        for choice, chapter in enumerate(chapter_ls["data"], 1):
-            title = chapter["attributes"]["title"]
-
-            page_count = chapter["attributes"]["pages"]
-
-            volume_count = chapter["attributes"]["volume"]
-            chapter_count = chapter["attributes"]["chapter"]
-
-            choice_map[str(choice)] = chapter
-
-            console.print(
-                f"({choice}) {title} - {volume_count}/{chapter_count} - Pages:"
-                f" {page_count}"
-            )
-
-        return choice_map
-
-    @staticmethod
-    def get_titles(manga: dict, chapter: dict) -> tuple[str, str]:
-        return manga["attributes"]["title"]["en"], chapter["attributes"]["title"]
+    def get_chapter_title(chapter: dict) -> str:
+        return chapter["attributes"]["title"]
 
     @staticmethod
     def dl_link_builder(host_url: str, chapter_hash: str, page: str) -> str:
         return f"{host_url}/data/{chapter_hash}/{page}"
+
+    def get_manga_choices(self, title: str) -> tuple[bool, list | str]:
+        status, resp = self.list_mangas(title)
+
+        return status, resp["data"] if status else resp["errors"]
+
+    def get_chapter_choices(self, manga: dict) -> tuple[bool, list | str]:
+        status, resp = self.list_chapters(manga)
+
+        return status, resp["data"] if status else resp["errors"]
 
     def list_mangas(self, title: str) -> tuple[bool, dict]:
         URL = f"{self.BASE_URL}/manga"
