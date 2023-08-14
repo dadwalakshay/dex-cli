@@ -12,7 +12,7 @@ from dex.db import read_chapter_meta
 from dex.integrations.base import BaseClient
 from dex.utils import _get_dirs, _open_file
 
-console = Console()
+console = Console(style="#00c38b")
 err_console = Console(stderr=True, style="bold red")
 
 
@@ -22,12 +22,12 @@ Config.raise_on_interrupt = True
 
 def banner():
     banner = """
-        ███╗   ███╗ █████╗ ███╗   ██╗ ██████╗  █████╗ ██████╗ ███████╗██╗  ██╗       ██████╗██╗     ██╗
-        ████╗ ████║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝      ██╔════╝██║     ██║
-        ██╔████╔██║███████║██╔██╗ ██║██║  ███╗███████║██║  ██║█████╗   ╚███╔╝ █████╗██║     ██║     ██║
-        ██║╚██╔╝██║██╔══██║██║╚██╗██║██║   ██║██╔══██║██║  ██║██╔══╝   ██╔██╗ ╚════╝██║     ██║     ██║
-        ██║ ╚═╝ ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║██████╔╝███████╗██╔╝ ██╗      ╚██████╗███████╗██║
-        ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
+        ██████╗ ███████╗██╗  ██╗      ██████╗██╗     ██╗
+        ██╔══██╗██╔════╝╚██╗██╔╝     ██╔════╝██║     ██║
+        ██║  ██║█████╗   ╚███╔╝█████╗██║     ██║     ██║
+        ██║  ██║██╔══╝   ██╔██╗╚════╝██║     ██║     ██║
+        ██████╔╝███████╗██╔╝ ██╗     ╚██████╗███████╗██║
+        ╚═════╝ ╚══════╝╚═╝  ╚═╝      ╚═════╝╚══════╝╚═╝
 
         Made by Akshay Dadwal | https://github.com/dadwalakshay | Press "ctrl + c" to quit.
     """  # noqa: E501
@@ -51,6 +51,7 @@ def choose_manga_prompt(client: BaseClient, title: str) -> dict:
             + [
                 "Quit",
             ],
+            cursor_style="#00c38b",
             return_index=True,
             pagination=True,
             page_size=10,
@@ -82,7 +83,9 @@ def choose_chapter_prompt(client: BaseClient, manga: dict) -> dict:
             f"Pages: {client.get_chapter_page_count(chapter)}"
             for chapter in non_empty_chapters
         ],
+        cursor_style="#00c38b",
         tick_character="x",
+        tick_style="#00c38b",
         return_indices=True,
         pagination=True,
         page_size=10,
@@ -98,6 +101,8 @@ def confirm_download_prompt(
 ) -> None:
     if confirm(
         question="Do you want to download selected chapter(s)?",
+        cursor_style="#00c38b",
+        default_is_yes=False,
     ):
         for chapter_obj in track(
             chapter_objs, description="Downloading selected chapter(s)..."
@@ -133,6 +138,7 @@ def confirm_read_prompt(chapter_path: str) -> bool:
                 f" {_meta_json_obj['chapter_title']}?"
                 f" {('- Last read at ' + last_read_at) if last_read_at else 'N/A'}"
             ),
+            cursor_style="#00c38b",
             default_is_yes=True,
         ):
             _open_file(f"{chapter_path}/{DEFAULT_PDF_NAME}")
@@ -171,6 +177,7 @@ def ls_dir(path: str = "") -> None:
             + [
                 "Quit",
             ],
+            cursor_style="#00c38b",
             return_index=True,
             pagination=True,
             page_size=10,
