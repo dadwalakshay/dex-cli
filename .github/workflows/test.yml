@@ -30,7 +30,7 @@ jobs:
           python3 -m pip install pipenv==2022.9.24
           pipenv --python `which python3` install --system --deploy
       - name: Run tests
-        run: pytest
+        run: pytest --cov --cov-report=xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
