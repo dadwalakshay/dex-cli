@@ -154,7 +154,7 @@ def confirm_read_prompt(chapter_path: str) -> bool:
     return is_read
 
 
-def ls_dir(path: str = "") -> None:
+def ls_dir(path: str = "", show_only_unread: bool = False) -> None:
     curr_path = path or DEFAULT_STORAGE_PATH
 
     paths = os.listdir(curr_path)
@@ -162,17 +162,25 @@ def ls_dir(path: str = "") -> None:
     if _META_STORE in paths:
         confirm_read_prompt(curr_path)
 
-        ls_dir(f"{curr_path}/../")
+        ls_dir(f"{curr_path}/../", show_only_unread)
 
     _dirs = sorted(_get_dirs(curr_path, paths))
 
-    _dirs.insert(0, "../")
+    available_dirs = []
 
-    _selected_dir = _dirs[
+    for _dir in _dirs:
+        chapter_dir_meta = read_chapter_meta(f"{curr_path}/{_dir}")
+
+        if not (show_only_unread and chapter_dir_meta.get("last_read_at")):
+            available_dirs.append((_dir, chapter_dir_meta))
+
+    available_dirs.insert(0, ("../", {}))
+
+    _selected_dir = available_dirs[
         select(
             options=[
-                f" {_dir} {('- Last read at ' + (read_chapter_meta(f'{curr_path}/{_dir}').get('last_read_at') or 'N/A'))}"  # noqa: E501
-                for _dir in _dirs
+                f"{_dir_obj[0]} {('- Last read at ' + (_dir_obj[1].get('last_read_at') or 'N/A') if _dir_obj[1] else '')}"  # noqa:E501
+                for _dir_obj in available_dirs
             ]
             + [
                 "Quit",
@@ -182,6 +190,6 @@ def ls_dir(path: str = "") -> None:
             pagination=True,
             page_size=10,
         )
-    ]
+    ][0]
 
-    ls_dir(f"{curr_path}/{_selected_dir}")
+    ls_dir(f"{curr_path}/{_selected_dir}", show_only_unread)

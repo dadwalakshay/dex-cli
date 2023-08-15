@@ -30,8 +30,8 @@ def download(title: str, code: str = "mangadex") -> None:
 
 
 @app.command()
-def explore() -> None:
+def explore(show_only_unread: bool = False) -> None:
     try:
-        ls_dir()
+        ls_dir(show_only_unread=show_only_unread)
     except (KeyboardInterrupt, IndexError):
         err_console.print("Bye Bye!")
