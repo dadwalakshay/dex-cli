@@ -32,16 +32,17 @@
 <b>**<i>Tested on Linux/macOS</i></b>
 
 ## How to setup and use dex-cli?
-- Install latest pipenv from PyPi, activate virtualenv (or create one with pipenv).
-- Install dependencies from `Pipfile.lock`
+- Install latest `pipenv`, activate virtualenv (or create one using pipenv)
+- Install dependencies  
+    - Run `pipenv install`
 - Run `python dex --help` to list available commands
-- Run `pytohn dex <command> --help` to get command specific help
+- Run `python dex <command> --help` to get command specific help
 
-By default, all mangas and related files are downloaded into the `<path-to-cloned-repo>/manda_dl/` dir, which can be configured using environment variables, using `.env` file is recommended (file should be placed at the root of cloned repo dir).
+By default, all manga and related files are downloaded into `<cloned-repo-dir>/manda_dl/` dir, which can be configured via environment variables, though using `.env` file is recommended (should be placed at root of `<cloned-repo-dir>/`).
 
 Sample `.env`
 ```
 DEFAULT_STORAGE_PATH=path-to-parent-dir/child-manga-dir/
 ```
 
-<i><ins>PS: Make sure executing User has rw: permissions to the</ins></i> `DEFAULT_STORAGE_PATH`
+<i><ins>PS: Make sure executing User has rw: permissions to </ins></i> `DEFAULT_STORAGE_PATH`
