@@ -18,7 +18,7 @@
             <img src="https://img.shields.io/badge/python-3.10+-blue.svg">
         </a>
     </p>
- </a>
+    <img src=".github/assets/demo.gif"/>
 </div>
 
 ## Features 
@@ -29,4 +29,19 @@
 - Stitches downloaded images into a single PDF
 - Well organised folder structure, along with meta-data i.e. last read timestamp
 
-<b>Tested on Linux/macOS</b>
+<b>**<i>Tested on Linux/macOS</i></b>
+
+## How to setup and use dex-cli?
+- Install latest pipenv from PyPi, activate virtualenv (or create one with pipenv).
+- Install dependencies from `Pipfile.lock`
+- Run `python dex --help` to list available commands
+- Run `pytohn dex <command> --help` to get command specific help
+
+By default, all mangas and related files are downloaded into the `<path-to-cloned-repo>/manda_dl/` dir, which can be configured using environment variables, using `.env` file is recommended (file should be placed at the root of cloned repo dir).
+
+Sample `.env`
+```
+DEFAULT_STORAGE_PATH=path-to-parent-dir/child-manga-dir/
+```
+
+<i><ins>PS: Make sure executing User has rw: permissions to the</ins></i> `DEFAULT_STORAGE_PATH`
